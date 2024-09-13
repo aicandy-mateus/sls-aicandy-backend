@@ -1,0 +1,13 @@
+{
+  "name": "sls-aicandy-backend",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "express": "^4.19.2",
+    "serverless-http": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "typescript": "^3.9.7"
+  }
+}
