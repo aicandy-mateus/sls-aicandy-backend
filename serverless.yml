@@ -7,8 +7,21 @@ provider:
   name: aws
   runtime: nodejs20.x
 
+  apiGateway:
+    apiKeys:
+      - name: aicandy-api
+
+
 functions:
-  api:
+  app:
     handler: handler.handler
+
     events:
-      - httpApi: "*"
+      - http:
+          path: /public
+          method: get
+
+      - http:
+          path: /private
+          method: get
+          private: true
