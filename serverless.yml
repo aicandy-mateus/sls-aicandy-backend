@@ -7,6 +7,16 @@ provider:
   name: aws
   runtime: nodejs20.x
 
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:Scan
+      Resource: arn:aws:dynamodb:us-east-1:*:table/AiCandyReportTable
+
   apiGateway:
     apiKeys:
       - name: aicandy-api
@@ -14,14 +24,30 @@ provider:
 
 functions:
   app:
-    handler: handler.handler
-
+    handler: src/index.handler
+    timeout: 300
     events:
       - http:
           path: /public
           method: get
 
       - http:
-          path: /private
+          path: /companies
           method: get
           private: true
+
+# resources: # CloudFormation template syntax
+#   Resources:
+#     usersTable:
+#       Type: AWS::DynamoDB::Table
+#       Properties:
+#         TableName: AiCandyReportTable
+#         AttributeDefinitions:
+#           - AttributeName: summary
+#             AttributeType: S
+#         KeySchema:
+#           - AttributeName: id
+#             KeyType: S
+#         ProvisionedThroughput:
+#           ReadCapacityUnits: 1
+#           WriteCapacityUnits: 1
