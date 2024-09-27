@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "@types/aws-sdk": "^2.7.0",
     "aws-sdk": "^2.1691.0",
     "express": "^4.19.2",
+    "mysql2": "^3.11.3",
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "@types/express": "^4.17.21",
+    "@types/mysql": "^2.15.26",
     "typescript": "^3.9.7"
   }
 }

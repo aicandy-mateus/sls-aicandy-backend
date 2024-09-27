@@ -2,55 +2,34 @@ import serverless from 'serverless-http';
 import express from 'express'
 import AWS from 'aws-sdk'
 
+import { getCompanies } from './services/companies';
+
+// import mysql, { ConnectionOptions } from 'mysql2/promise';
+
+// const access: ConnectionOptions = {
+//   host: process.env.RDS_HOSTNAME,
+//   user: process.env.RDS_USERNAME,
+//   password: process.env.RDS_PASSWORD,
+//   port: 3306,
+//   database: process.env.DATABASE,
+// };
+
+// const connection = mysql.createPool(access)
+
 const app = express()
 app.use(express.json())
-const dynamoDb = new AWS.DynamoDB.DocumentClient()
+// const dynamoDb = new AWS.DynamoDB.DocumentClient()
 
-app.get("/companies", async (req, res, next) => {
-  // const params = {
-  //   TableName: 'AiCandyReportTable',
-  //   FilterExpression: 'transcription_id = :value',
-  //   ExpressionAttributeValues: {
-  //     ':value': 5850,
-  //   },
-  // };
-
+app.get("/companies", async function (req, res, next) {
   try {
-    // const result = await dynamoDb.scan(params).promise()
-    
-    return res.status(200).json({
-      data: {
-        companies: []
-      },
-    });
+    // const [ result ] = await connection.execute('SELECT name, cvm_code FROM producers WHERE `cvm_code` = ?', [20613])
+    const result = await getCompanies()
+    console.log(result)
+    return res.status(200).json({ data: 'teste'})
   } catch (error) {
     console.log(error)
-    return res.status(200).json({
-      data: error,
-    });
+    return res.status(500).send()
   }
-});
-
-app.get("/private", async (req, res, next) => {
-  const params = {
-    TableName: 'AiCandyReportTable',
-  };
-
-  try {
-    const result = await dynamoDb.scan(params).promise()
-    
-    return res.status(200).json({
-      data: result,
-    });
-  } catch (error) {
-    return res.status(200).json({
-      data: error,
-    });
-  }
-
-  return res.status(200).json({
-    message: "AiCandy API V1 | Private route",
-  });
 });
 
 app.use((req, res, next) => {

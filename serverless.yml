@@ -28,14 +28,10 @@ functions:
     timeout: 300
     events:
       - http:
-          path: /public
-          method: get
-
-      - http:
           path: /companies
           method: get
           private: true
-
+  
 # resources: # CloudFormation template syntax
 #   Resources:
 #     usersTable:
