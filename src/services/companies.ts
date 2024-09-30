@@ -1,54 +1,40 @@
-import mysql, { ConnectionOptions } from 'mysql';
+import mysql2, { ConnectionOptions } from 'mysql2';
 
 const access = {
   host: process.env.RDS_HOSTNAME,
   user: process.env.RDS_USERNAME,
   password: process.env.RDS_PASSWORD,
-  port: 3306,
+  port: Number(process.env.RDS_PORT),
   database: process.env.DATABASE,
 };
 
-const connection = mysql.createConnection(access)
+const connection = mysql2.createConnection(access)
 
-// export const getCompanies = async function(cvm_code?: number) {
-//   return new Promise(async (res, rej) => {
-//     try {
-//       const access: ConnectionOptions = {
-//         host: process.env.RDS_HOSTNAME,
-//         user: process.env.RDS_USERNAME,
-//         password: process.env.RDS_PASSWORD,
-//         port: 3306,
-//         database: process.env.DATABASE,
-//         connectTimeout: 1000000000,
-//         connectionLimit: 1000000000,
-//       };
-      
-//       const connection = await mysql.createConnection(access)
-  
-//       const [ result ] = await connection.query(`SELECT name, cvm_code FROM producers`)
-
-//       res(result)
-
-//     } catch (error) {
-//       console.log(error)
-//       rej(error)
-//     }
-
-//     // (err, results) => {
-//     //   if(err) return rej(err)
-  
-//     //   return res(results)
-//     // }
-//   })
+// interface Company {
+//   name: string;
+//   cvm_code: number;
+//   ticker: string | null;
+//   ticker2: string | null
 // }
 
+export const getCompanies = async function(cvm_code?: string) {
+  return new Promise((res, rej) => {
+    const QUERY = {
+      allCompanies: `SELECT name, cvm_code, ticker, ticker2 FROM producers`,
+      companieByCvmCode: `SELECT name, cvm_code, ticker, ticker2 FROM producers WHERE cvm_code = ?`
+    }
 
-export const getCompanies = async function(cvm_code?: number) {
-  return new Promise((result, rej) => {
-    connection.query(`SELECT name, cvm_code FROM producers WHERE cvm_code = 11398`, (err, data) => {
+    if(cvm_code) {
+      connection.execute(QUERY.companieByCvmCode, [cvm_code], (err, data) => {
+        if(err) throw new Error();
+        
+        return res(data[0])
+      })
+    }
+
+    connection.query(QUERY.allCompanies, (err, data) => {
       if(err) throw new Error();
-
-      return result(data)
+      return res(data)
     })
   })
 }

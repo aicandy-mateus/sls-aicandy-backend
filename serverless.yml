@@ -3,6 +3,10 @@ org: aicandy
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: sls-aicandy-backend
 
+custom:
+  serverless-offline:
+    httpPort: 4000
+
 provider:
   name: aws
   runtime: nodejs20.x
@@ -21,16 +25,33 @@ provider:
     apiKeys:
       - name: aicandy-api
 
+  environment:
+    RDS_HOSTNAME: legendei-app.cgaek3spfsqe.us-east-1.rds.amazonaws.com
+    RDS_USERNAME: admin
+    RDS_PASSWORD: "u#JP6729"
+    RDS_PORT: 3306
+    DATABASE: legendei0-app
 
 functions:
   app:
     handler: src/index.handler
-    timeout: 300
+    timeout: 30
     events:
       - http:
           path: /companies
           method: get
-          private: true
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}
+          method: get
+          private: false
+
+    vpc:
+      securityGroupIds:
+        - sg-0a5e8ca68095b1ee6
+      subnetIds:
+        - subnet-b7b40886
   
 # resources: # CloudFormation template syntax
 #   Resources:
@@ -47,3 +68,6 @@ functions:
 #         ProvisionedThroughput:
 #           ReadCapacityUnits: 1
 #           WriteCapacityUnits: 1
+
+plugins:
+  - serverless-offline

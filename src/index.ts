@@ -4,28 +4,30 @@ import AWS from 'aws-sdk'
 
 import { getCompanies } from './services/companies';
 
-// import mysql, { ConnectionOptions } from 'mysql2/promise';
-
-// const access: ConnectionOptions = {
-//   host: process.env.RDS_HOSTNAME,
-//   user: process.env.RDS_USERNAME,
-//   password: process.env.RDS_PASSWORD,
-//   port: 3306,
-//   database: process.env.DATABASE,
-// };
-
-// const connection = mysql.createPool(access)
-
 const app = express()
 app.use(express.json())
 // const dynamoDb = new AWS.DynamoDB.DocumentClient()
 
-app.get("/companies", async function (req, res, next) {
+interface CompaniesRequest extends express.Request{
+  params: {
+    cvm_code?: string
+  }
+}
+
+app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, next) {
   try {
-    // const [ result ] = await connection.execute('SELECT name, cvm_code FROM producers WHERE `cvm_code` = ?', [20613])
-    const result = await getCompanies()
-    console.log(result)
-    return res.status(200).json({ data: 'teste'})
+    const cvm_code = req.params.cvm_code
+    console.log('CVM_CODE', cvm_code)
+    const result = await getCompanies(cvm_code)
+
+    // if(result.length === 0) {
+    //   return res.status(404).json({
+    //     data: result,
+    //     message: "Company not found!"
+    //   })
+    // }
+
+    return res.status(200).json({ data: result })
   } catch (error) {
     console.log(error)
     return res.status(500).send()
