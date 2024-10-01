@@ -1,4 +1,8 @@
 import mysql2, { ConnectionOptions } from 'mysql2';
+import AWS from 'aws-sdk'
+import { transformCompaniesObject } from '../utils';
+
+const dynamoDb = new AWS.DynamoDB.DocumentClient()
 
 const access = {
   host: process.env.RDS_HOSTNAME,
@@ -10,31 +14,68 @@ const access = {
 
 const connection = mysql2.createConnection(access)
 
-// interface Company {
-//   name: string;
-//   cvm_code: number;
-//   ticker: string | null;
-//   ticker2: string | null
-// }
 
-export const getCompanies = async function(cvm_code?: string) {
+
+export const getCompanies = async function(cvm_code?: string): Promise<Company[]> {
   return new Promise((res, rej) => {
     const QUERY = {
-      allCompanies: `SELECT name, cvm_code, ticker, ticker2 FROM producers`,
-      companieByCvmCode: `SELECT name, cvm_code, ticker, ticker2 FROM producers WHERE cvm_code = ?`
+      allCompanies: `SELECT idproducers, name, cvm_code, ticker, ticker2 FROM producers WHERE cvm_code IS NOT NULL`,
+      companieByCvmCode: `SELECT idproducers, name, cvm_code, ticker, ticker2 FROM producers WHERE cvm_code = ? AND cvm_code IS NOT NULL`
     }
 
     if(cvm_code) {
       connection.execute(QUERY.companieByCvmCode, [cvm_code], (err, data) => {
         if(err) throw new Error();
         
-        return res(data[0])
+        const companiesDBResult = data as CompanyDbReturned[]
+
+        const companies = transformCompaniesObject(companiesDBResult)
+
+        return res(companies)
       })
     }
 
     connection.query(QUERY.allCompanies, (err, data) => {
       if(err) throw new Error();
-      return res(data)
+
+      const companiesDBResult = data as CompanyDbReturned[]
+
+      const companies = transformCompaniesObject(companiesDBResult)
+
+      return res(companies)
     })
   })
+}
+
+
+export const getFullWebcast = async function(idProducer: number) {
+  const params = {
+    TableName: 'AiCandyReportTable',
+    FilterExpression: 'title_object.company_data.idproducers = :value',
+    ExpressionAttributeValues: {
+      ':value': idProducer,
+    },
+  };
+
+
+  const res = await dynamoDb.scan(params).promise();
+
+  return res
+}
+
+export const getWebcast = async function(idProducer: number) {
+  const params = {
+    TableName: 'AiCandyReportTable',
+    Select: 'SPECIFIC_ATTRIBUTES',
+    ProjectionExpression: 'title_object.report_title, id',
+    FilterExpression: 'title_object.company_data.idproducers = :value',
+    ExpressionAttributeValues: {
+      ':value': idProducer,
+    },
+  };
+
+
+  const res = await dynamoDb.scan(params).promise();
+
+  return res
 }
