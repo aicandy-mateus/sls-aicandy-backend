@@ -1,7 +1,7 @@
 import serverless from 'serverless-http';
 import express from 'express'
 
-import { getCompanies, getFullWebcast } from './services/companies';
+import { getCompanies, getFullWebcast, getWebcast } from './services/companies';
 
 const app = express()
 app.use(express.json())
@@ -11,6 +11,8 @@ interface CompaniesRequest extends express.Request{
     cvm_code?: string
   }
 }
+
+
 
 app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, next) {
   try {
@@ -39,7 +41,22 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
       
     }
 
-    return res.status(200).json({ data: companies })
+
+    // Companies && webcasts
+    const webcasts = await getWebcast()
+
+
+    const companiesWithWebcasts = companies.map((comp, i) => {
+      const companieWebcast = webcasts.Items?.filter((wc) => wc.title_object.company_data?.idproducers === comp.idproducers)
+
+      return {
+        ...comp,
+        webcasts: companieWebcast
+      } as CompanyWithWebcast
+      
+    })
+
+    return res.status(200).json({ data: companiesWithWebcasts })
   } catch (error) {
     console.log(error)
     return res.status(500).send()
