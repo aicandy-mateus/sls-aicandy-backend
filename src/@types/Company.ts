@@ -1,4 +1,4 @@
-interface Webcast {
+interface WebcastEntity {
   id: string,
   title_object: {
     report_title: string
@@ -6,24 +6,31 @@ interface Webcast {
       idproducers: string
     }
   }
-
 }
 
-interface Company {
+interface WebcastListDTO {
+  id: string,
+  quarter: string
+}
+
+interface CompanyEntity {
+  name: string;
+  cvm_code: number;
+  ticker: string | null;
+  ticker2: string | null;
+  idproducers: number
+}
+
+interface CompanyDTO {
   name: string;
   cvm_code: number;
   idproducers: number
   tickers: string[]
 }
 
-interface CompanyWithWebcast extends Company {
-  webcasts: Webcast[]
-}
-
-interface CompanyDbReturned {
+interface CompanyListDTO {
   name: string;
   cvm_code: number;
-  ticker: string | null;
-  ticker2: string | null;
-  idproducers: number
+  tickers: string[]
+  webcasts: WebcastListDTO[]
 }

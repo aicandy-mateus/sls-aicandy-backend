@@ -2,6 +2,7 @@ import serverless from 'serverless-http';
 import express from 'express'
 
 import { getCompanies, getFullWebcast, getWebcast } from './services/companies';
+import { toWebcastListDTO } from './utils';
 
 const app = express()
 app.use(express.json())
@@ -58,7 +59,8 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
       return {
         ...comp,
         webcasts: companieWebcast
-      } as CompanyWithWebcast
+      }
+
     })
 
     return res.status(200).json({ data: companiesWithWebcasts })
@@ -83,18 +85,19 @@ app.get('/companies/:cvm_code/webcasts/:id?', async (req: WebcastsRequest, res) 
 
     const company = companies[0]
 
-    const webcasts = await getFullWebcast(company.idproducers)
-
-    if(id && webcasts.Items?.length === 0) {
-      return res.status(404).json({
-        data: [],
-        message: "Webcast not found!"
-      })
-    }
 
     if(id) {
-      const wc = webcasts.Items?.find((wc) => wc.id === id)
+      const webcasts = await getFullWebcast(company.idproducers)
 
+      if(webcasts.Items?.length === 0) {
+        return res.status(404).json({
+          data: [],
+          message: "Webcast not found!"
+        })
+      }
+  
+      const wc = webcasts.Items?.find((wc) => wc.id === id)
+  
       if(!!wc) {
         return res.status(200).json({
           data: {
@@ -109,9 +112,13 @@ app.get('/companies/:cvm_code/webcasts/:id?', async (req: WebcastsRequest, res) 
       })
     }
 
+
+    const webcasts = (await getWebcast(company.idproducers)).Items
+    const webcastList = toWebcastListDTO(webcasts)
+
     return res.status(200).json({
       data: {
-        webcasts: webcasts.Items
+        webcasts: webcastList
       }
     })
     

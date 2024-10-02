@@ -1,6 +1,6 @@
 import mysql2, { ConnectionOptions } from 'mysql2';
 import AWS from 'aws-sdk'
-import { transformCompaniesObject } from '../utils';
+import { toCompaniesDTO } from '../utils';
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient()
 
@@ -16,7 +16,7 @@ const connection = mysql2.createConnection(access)
 
 
 
-export const getCompanies = async function(cvm_code?: string): Promise<Company[]> {
+export const getCompanies = async function(cvm_code?: string): Promise<CompanyDTO[]> {
   return new Promise((res, rej) => {
     const QUERY = {
       allCompanies: `SELECT idproducers, name, cvm_code, ticker, ticker2 FROM producers WHERE cvm_code IS NOT NULL`,
@@ -27,9 +27,9 @@ export const getCompanies = async function(cvm_code?: string): Promise<Company[]
       connection.execute(QUERY.companieByCvmCode, [cvm_code], (err, data) => {
         if(err) throw new Error();
         
-        const companiesDBResult = data as CompanyDbReturned[]
+        const companiesDBResult = data as CompanyEntity[]
 
-        const companies = transformCompaniesObject(companiesDBResult)
+        const companies = toCompaniesDTO(companiesDBResult)
 
         return res(companies)
       })
@@ -38,9 +38,9 @@ export const getCompanies = async function(cvm_code?: string): Promise<Company[]
     connection.query(QUERY.allCompanies, (err, data) => {
       if(err) throw new Error();
 
-      const companiesDBResult = data as CompanyDbReturned[]
+      const companiesDBResult = data as CompanyEntity[]
 
-      const companies = transformCompaniesObject(companiesDBResult)
+      const companies = toCompaniesDTO(companiesDBResult)
 
       return res(companies)
     })
@@ -64,11 +64,15 @@ export const getFullWebcast = async function(idProducer: number) {
 }
 
 
-export const getWebcast = async function() {
+export const getWebcast = async function(idProducer) {
   let params = {
     TableName: 'AiCandyReportTable',
     Select: 'SPECIFIC_ATTRIBUTES',
     ProjectionExpression: 'title_object.report_title, title_object.company_data.idproducers, id',
+    FilterExpression: 'title_object.company_data.idproducers = :value',
+    ExpressionAttributeValues: {
+      ':value': idProducer,
+    },
   };
 
   const res = await dynamoDb.scan(params).promise();
