@@ -64,23 +64,12 @@ export const getFullWebcast = async function(idProducer: number) {
 }
 
 
-export const getWebcast = async function(idProducer?: number) {
+export const getWebcast = async function() {
   let params = {
     TableName: 'AiCandyReportTable',
     Select: 'SPECIFIC_ATTRIBUTES',
     ProjectionExpression: 'title_object.report_title, title_object.company_data.idproducers, id',
-    // FilterExpression: 'title_object.company_data.idproducers',
-    // ExpressionAttributeValues: {},
   };
-
-  // if(idProducer) {
-  //   params = {
-  //     ...params,
-  //     ExpressionAttributeValues: {
-  //       ':value': idProducer,
-  //     }
-  //   }
-  // }
 
   const res = await dynamoDb.scan(params).promise();
 

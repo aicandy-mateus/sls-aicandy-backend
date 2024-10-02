@@ -12,6 +12,12 @@ interface CompaniesRequest extends express.Request{
   }
 }
 
+interface WebcastsRequest extends express.Request{
+  params: {
+    cvm_code?: string,
+    id?: string
+  }
+}
 
 
 app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, next) {
@@ -53,7 +59,6 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
         ...comp,
         webcasts: companieWebcast
       } as CompanyWithWebcast
-      
     })
 
     return res.status(200).json({ data: companiesWithWebcasts })
@@ -62,6 +67,58 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
     return res.status(500).send()
   }
 });
+
+app.get('/companies/:cvm_code/webcasts/:id?', async (req: WebcastsRequest, res) => {
+  try {
+    const { cvm_code, id } = req.params
+
+    const companies = await getCompanies(cvm_code)
+
+    if(cvm_code && companies.length === 0) {
+      return res.status(404).json({
+        data: [],
+        message: "Company not found!"
+      })
+    }
+
+    const company = companies[0]
+
+    const webcasts = await getFullWebcast(company.idproducers)
+
+    if(id && webcasts.Items?.length === 0) {
+      return res.status(404).json({
+        data: [],
+        message: "Webcast not found!"
+      })
+    }
+
+    if(id) {
+      const wc = webcasts.Items?.find((wc) => wc.id === id)
+
+      if(!!wc) {
+        return res.status(200).json({
+          data: {
+            webcast: wc
+          },
+        })
+      }
+
+      return res.status(200).json({
+        data: [],
+        message: "Webcast not found!"
+      })
+    }
+
+    return res.status(200).json({
+      data: {
+        webcasts: webcasts.Items
+      }
+    })
+    
+  } catch (error) {
+    
+  }
+})
 
 app.use((req, res, next) => {
   return res.status(404).json({

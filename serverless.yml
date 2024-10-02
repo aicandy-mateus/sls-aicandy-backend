@@ -47,6 +47,16 @@ functions:
           method: get
           private: false
 
+      - http:
+          path: /companies/{cvm_code}/webcasts
+          method: get
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}/webcasts/{id}
+          method: get
+          private: false
+
     vpc:
       securityGroupIds:
         - sg-0a5e8ca68095b1ee6
