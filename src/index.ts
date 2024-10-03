@@ -1,7 +1,7 @@
 import serverless from 'serverless-http';
 import express from 'express'
 
-import { getBalances, getBalancesIds, getCashFlowsIds, getCashFlows, getCompanies, getDividendsIds, getFullWebcast, getResultsIds, getWebcast } from './services/companies';
+import { getBalances, getBalancesIds, getCashFlowsIds, getCashFlows, getCompanies, getDividendsIds, getFullWebcast, getResultsIds, getWebcast, getDividends } from './services/companies';
 import { toWebcastListDTO } from './utils';
 import webcastsRouter from './controllers/webcasts';
 
@@ -231,6 +231,50 @@ app.get('/companies/:cvm_code/cash_flows/:id?', async (req: BalancesRequest, res
     return res.status(500).send()
   }
 })
+
+app.get('/companies/:cvm_code/dividends/:id?', async (req: BalancesRequest, res) => {
+  try {
+    const { cvm_code, id } = req.params
+
+
+    let dividends = await getDividends(cvm_code, id)
+
+    if(id) {
+      if(dividends.length === 0) {
+        return res.status(404).json({
+          data: [],
+          message: "Dividends not found!"
+        })
+      }
+  
+      const dividend = dividends[0]
+  
+      if(!!dividend) {
+        return res.status(200).json({
+          data: {
+            dividend: dividend
+          },
+        })
+      }
+
+      return res.status(404).json({
+        data: [],
+        message: "Dividends not found!"
+      })
+    }
+
+
+    return res.status(200).json({
+      data: {
+        dividends: dividends
+      }
+    })
+    
+  } catch (error) {
+    return res.status(500).send()
+  }
+})
+
 
 app.use((req, res, next) => {
   return res.status(404).json({

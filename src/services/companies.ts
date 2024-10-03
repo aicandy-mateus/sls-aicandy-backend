@@ -123,6 +123,26 @@ export const getDividendsIds = async function(idProducer: number) {
   })
 }
 
+export const getDividends = async function(cvm_code: string | number, dividendsId?: string | number) {
+  return new Promise((res, rej) => {
+    let QUERY: string;
+    let VALUES = [cvm_code]
+
+    if(!!dividendsId) {
+      QUERY = `SELECT * FROM producer_dividends WHERE cvm_code = ? AND id = ?`
+      VALUES.push(dividendsId)
+    } else {
+      QUERY = `SELECT * FROM producer_dividends WHERE cvm_code = ?`
+    }
+
+    connection.execute(QUERY, VALUES, (err, data) => {
+      if(err) rej(err)
+
+      return res(data)
+    })
+  })
+}
+
 export const getResultsIds = async function(idProducer: number) {
   return new Promise((res, rej) => {
     const QUERY = `SELECT id FROM producer_results WHERE idproducers = ?`
