@@ -1,7 +1,7 @@
 import serverless from 'serverless-http';
 import express from 'express'
 
-import { getCompanies, getFullWebcast, getWebcast } from './services/companies';
+import { getBalances, getCashFlow, getCompanies, getDividends, getFullWebcast, getResults, getWebcast } from './services/companies';
 import { toWebcastListDTO } from './utils';
 
 const app = express()
@@ -35,13 +35,24 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
 
     if(cvm_code) {
       const company = companies[0]
+      const data = await Promise.all([
+        getBalances(company.idproducers),
+        getCashFlow(company.idproducers),
+        getDividends(company.idproducers),
+        getResults(company.idproducers),
+      ])
 
+      const [balances, cashFlow, dividends, results] = data
 
       const webcast = await getFullWebcast(company.idproducers)
 
       return res.status(200).json({
         data: {
           company_data: company,
+          balances: balances,
+          cashFlow: cashFlow,
+          dividends: dividends,
+          results: results,
           webcasts: webcast.Items
         },
       })
@@ -58,7 +69,7 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
 
       return {
         ...comp,
-        webcasts: companieWebcast
+        webcasts: toWebcastListDTO(companieWebcast)
       }
 
     })
