@@ -1,7 +1,7 @@
 import serverless from 'serverless-http';
 import express from 'express'
 
-import { getBalances, getBalancesIds, getCashFlowIds, getCompanies, getDividendsIds, getFullWebcast, getResultsIds, getWebcast } from './services/companies';
+import { getBalances, getBalancesIds, getCashFlowsIds, getCashFlows, getCompanies, getDividendsIds, getFullWebcast, getResultsIds, getWebcast } from './services/companies';
 import { toWebcastListDTO } from './utils';
 import webcastsRouter from './controllers/webcasts';
 
@@ -46,7 +46,7 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
       const company = companies[0]
       const data = await Promise.all([
         getBalancesIds(company.idproducers),
-        getCashFlowIds(company.idproducers),
+        getCashFlowsIds(company.idproducers),
         getDividendsIds(company.idproducers),
         getResultsIds(company.idproducers),
       ])
@@ -58,11 +58,11 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
       return res.status(200).json({
         data: {
           company_data: company,
+          webcasts: webcast.Items,
           balances: balances,
-          cashFlow: cashFlow,
+          cashFlows: cashFlow,
           dividends: dividends,
-          results: results,
-          webcasts: webcast.Items
+          results: results
         },
       })
       
@@ -181,6 +181,49 @@ app.get('/companies/:cvm_code/balances/:id?', async (req: BalancesRequest, res) 
     return res.status(200).json({
       data: {
         balances: balances
+      }
+    })
+    
+  } catch (error) {
+    return res.status(500).send()
+  }
+})
+
+app.get('/companies/:cvm_code/cash_flows/:id?', async (req: BalancesRequest, res) => {
+  try {
+    const { cvm_code, id } = req.params
+
+
+    let cashFlows = await getCashFlows(cvm_code, id)
+
+    if(id) {
+      if(cashFlows.length === 0) {
+        return res.status(404).json({
+          data: [],
+          message: "Cash flows not found!"
+        })
+      }
+  
+      const cashFlow = cashFlows[0]
+  
+      if(!!cashFlow) {
+        return res.status(200).json({
+          data: {
+            cash_flow: cashFlow
+          },
+        })
+      }
+
+      return res.status(404).json({
+        data: [],
+        message: "Cash flow not found!"
+      })
+    }
+
+
+    return res.status(200).json({
+      data: {
+        cash_flows: cashFlows
       }
     })
     

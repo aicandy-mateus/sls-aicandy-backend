@@ -79,12 +79,32 @@ export const getBalances = async function(cvm_code: string | number, balanceId?:
   })
 }
 
-export const getCashFlowIds = async function(idProducer: number) {
+export const getCashFlowsIds = async function(idProducer: number) {
   return new Promise((res, rej) => {
     const QUERY = `SELECT id FROM producer_cash_flow WHERE idproducers = ?`
 
     connection.execute(QUERY, [idProducer], (err, data) => {
-      if(err) throw new Error();
+      if(err) rej(err);
+
+      return res(data)
+    })
+  })
+}
+
+export const getCashFlows = async function(cvm_code: string | number, cashFlowId?: string | number) {
+  return new Promise((res, rej) => {
+    let QUERY: string;
+    let VALUES = [cvm_code]
+
+    if(!!cashFlowId) {
+      QUERY = `SELECT * FROM producer_cash_flow WHERE cvm_code = ? AND id = ?`
+      VALUES.push(cashFlowId)
+    } else {
+      QUERY = `SELECT * FROM producer_cash_flow WHERE cvm_code = ?`
+    }
+
+    connection.execute(QUERY, VALUES, (err, data) => {
+      if(err) rej(err)
 
       return res(data)
     })

@@ -67,6 +67,36 @@ functions:
           method: get
           private: false
 
+      - http:
+          path: /companies/{cvm_code}/cash_flows
+          method: get
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}/cash_flows/{id}
+          method: get
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}/dividends
+          method: get
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}/dividends/{id}
+          method: get
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}/results
+          method: get
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}/results/{id}
+          method: get
+          private: false
+
     vpc:
       securityGroupIds:
         - sg-0a5e8ca68095b1ee6
