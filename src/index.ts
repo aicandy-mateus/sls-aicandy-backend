@@ -1,8 +1,9 @@
 import serverless from 'serverless-http';
 import express from 'express'
 
-import { getBalances, getCashFlow, getCompanies, getDividends, getFullWebcast, getResults, getWebcast } from './services/companies';
+import { getBalances, getBalancesIds, getCashFlowIds, getCompanies, getDividendsIds, getFullWebcast, getResultsIds, getWebcast } from './services/companies';
 import { toWebcastListDTO } from './utils';
+import webcastsRouter from './controllers/webcasts';
 
 const app = express()
 app.use(express.json())
@@ -20,6 +21,14 @@ interface WebcastsRequest extends express.Request{
   }
 }
 
+interface BalancesRequest extends express.Request{
+  params: {
+    cvm_code: string,
+    id?: string
+  }
+}
+
+
 
 app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, next) {
   try {
@@ -36,10 +45,10 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
     if(cvm_code) {
       const company = companies[0]
       const data = await Promise.all([
-        getBalances(company.idproducers),
-        getCashFlow(company.idproducers),
-        getDividends(company.idproducers),
-        getResults(company.idproducers),
+        getBalancesIds(company.idproducers),
+        getCashFlowIds(company.idproducers),
+        getDividendsIds(company.idproducers),
+        getResultsIds(company.idproducers),
       ])
 
       const [balances, cashFlow, dividends, results] = data
@@ -76,7 +85,6 @@ app.get("/companies/:cvm_code?", async function (req: CompaniesRequest, res, nex
 
     return res.status(200).json({ data: companiesWithWebcasts })
   } catch (error) {
-    console.log(error)
     return res.status(500).send()
   }
 });
@@ -117,9 +125,9 @@ app.get('/companies/:cvm_code/webcasts/:id?', async (req: WebcastsRequest, res) 
         })
       }
 
-      return res.status(200).json({
+      return res.status(404).json({
         data: [],
-        message: "Webcast not found!"
+        message: "Webcast id not found!"
       })
     }
 
@@ -134,7 +142,50 @@ app.get('/companies/:cvm_code/webcasts/:id?', async (req: WebcastsRequest, res) 
     })
     
   } catch (error) {
+    return res.status(500).send()
+  }
+})
+
+app.get('/companies/:cvm_code/balances/:id?', async (req: BalancesRequest, res) => {
+  try {
+    const { cvm_code, id } = req.params
+
+    console.log('cvm', cvm_code)
+    let balances = await getBalances(cvm_code, id)
+
+    if(id) {
+      if(balances.length === 0) {
+        return res.status(404).json({
+          data: [],
+          message: "Balances not found!"
+        })
+      }
+  
+      const balance = balances[0]
+  
+      if(!!balance) {
+        return res.status(200).json({
+          data: {
+            balance: balance
+          },
+        })
+      }
+
+      return res.status(404).json({
+        data: [],
+        message: "Balance not found!"
+      })
+    }
+
+
+    return res.status(200).json({
+      data: {
+        balances: balances
+      }
+    })
     
+  } catch (error) {
+    return res.status(500).send()
   }
 })
 

@@ -57,6 +57,16 @@ functions:
           method: get
           private: false
 
+      - http:
+          path: /companies/{cvm_code}/balances
+          method: get
+          private: false
+
+      - http:
+          path: /companies/{cvm_code}/balances/{id}
+          method: get
+          private: false
+
     vpc:
       securityGroupIds:
         - sg-0a5e8ca68095b1ee6
