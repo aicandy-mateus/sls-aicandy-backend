@@ -25,7 +25,7 @@ export const getCompanies = async function(cvm_code?: string): Promise<CompanyDT
 
     if(cvm_code) {
       connection.execute(QUERY.companieByCvmCode, [cvm_code], (err, data) => {
-        if(err) throw new Error();
+        if(err) rej(err);
         
         const companiesDBResult = data as CompanyEntity[]
 
@@ -36,7 +36,7 @@ export const getCompanies = async function(cvm_code?: string): Promise<CompanyDT
     }
 
     connection.query(QUERY.allCompanies, (err, data) => {
-      if(err) throw new Error();
+      if(err) rej(err);
 
       const companiesDBResult = data as CompanyEntity[]
 
@@ -52,7 +52,7 @@ export const getBalancesIds = async function(idProducer: number) {
     const QUERY = `SELECT id FROM producer_balances WHERE idproducers = ?`
 
     connection.execute(QUERY, [idProducer], (err, data) => {
-      if(err) throw new Error();
+      if(err) rej(err);
 
       return res(data)
     })
@@ -116,7 +116,7 @@ export const getDividendsIds = async function(idProducer: number) {
     const QUERY = `SELECT id FROM producer_dividends WHERE idproducers = ?`
 
     connection.execute(QUERY, [idProducer], (err, data) => {
-      if(err) throw new Error();
+      if(err) rej(err);
 
       return res(data)
     })
@@ -148,7 +148,7 @@ export const getResultsIds = async function(idProducer: number) {
     const QUERY = `SELECT id FROM producer_results WHERE idproducers = ?`
 
     connection.execute(QUERY, [idProducer], (err, data) => {
-      if(err) throw new Error();
+      if(err) rej(err);
 
       return res(data)
     })
