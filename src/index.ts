@@ -1,7 +1,7 @@
 import serverless from 'serverless-http';
 import express from 'express'
 
-import { getBalances, getBalancesIds, getCashFlowsIds, getCashFlows, getCompanies, getDividendsIds, getFullWebcast, getResultsIds, getWebcast, getDividends } from './services/companies';
+import { getBalances, getBalancesIds, getCashFlowsIds, getCashFlows, getCompanies, getDividendsIds, getFullWebcast, getResultsIds, getWebcast, getDividends, getResults } from './services/companies';
 import { toWebcastListDTO } from './utils';
 import webcastsRouter from './controllers/webcasts';
 
@@ -275,6 +275,48 @@ app.get('/companies/:cvm_code/dividends/:id?', async (req: BalancesRequest, res)
   }
 })
 
+app.get('/companies/:cvm_code/results/:id?', async (req: BalancesRequest, res) => {
+  try {
+    const { cvm_code, id } = req.params
+
+
+    let results = await getResults(cvm_code, id)
+
+    if(id) {
+      if(results.length === 0) {
+        return res.status(404).json({
+          data: [],
+          message: "Company's results not found!"
+        })
+      }
+  
+      const companyResult = results[0]
+  
+      if(!!companyResult) {
+        return res.status(200).json({
+          data: {
+            result: companyResult
+          },
+        })
+      }
+
+      return res.status(404).json({
+        data: [],
+        message: "Company's results not found!"
+      })
+    }
+
+
+    return res.status(200).json({
+      data: {
+        results: results
+      }
+    })
+    
+  } catch (error) {
+    return res.status(500).send()
+  }
+})
 
 app.use((req, res, next) => {
   return res.status(404).json({

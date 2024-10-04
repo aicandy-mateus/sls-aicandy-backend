@@ -155,6 +155,26 @@ export const getResultsIds = async function(idProducer: number) {
   })
 }
 
+export const getResults = async function(cvm_code: string | number, resultsId?: string | number) {
+  return new Promise((res, rej) => {
+    let QUERY: string;
+    let VALUES = [cvm_code]
+
+    if(!!resultsId) {
+      QUERY = `SELECT * FROM producer_results WHERE cvm_code = ? AND id = ?`
+      VALUES.push(resultsId)
+    } else {
+      QUERY = `SELECT * FROM producer_results WHERE cvm_code = ?`
+    }
+
+    connection.execute(QUERY, VALUES, (err, data) => {
+      if(err) rej(err)
+
+      return res(data)
+    })
+  })
+}
+
 
 export const getFullWebcast = async function(idProducer: number) {
   const params = {
